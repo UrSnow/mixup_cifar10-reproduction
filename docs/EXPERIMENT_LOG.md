@@ -31,6 +31,51 @@
 - Watch for: Drive trash filling with replaced ~135 MB checkpoints; CUDA deterministic-mode
   errors or slowdown; full-epoch time (the pilot is only 8 batches per epoch).
 
+## 2026-10-28: Colab pilot (feasibility only, not evidence)
+
+- Purpose: check that the pipeline runs on a Colab GPU and measure timing and memory before
+  committing to the six-run budget. No test data was loaded.
+- Code: the ZIP built on 2026-10-24, identical to commit 658837e. Config `configs/proposal.json`,
+  pilot override 2 epochs, no LR milestones, seed 1, 1,024 train / 256 validation images.
+- Runtime: Colab browser interface, Tesla T4, Python 3.13.16, torch 2.11.0+cu130,
+  torchvision 0.26.0+cu130.
+- The test cell finished without an exception (`check=True`), so all 8 tests passed on the Colab
+  runtime. CIFAR-10 downloaded, Drive mounted, and deterministic mode raised no CUDA error.
+- Results (copies in `results/pilot/`; ERM identity confirmed by the notebook's printed history):
+
+  | Method | Epoch | Train objective | Val loss | Val error (%) | Compute (s) | Peak GPU (MB) |
+  |---|---:|---:|---:|---:|---:|---:|
+  | ERM | 1 | 2.483 | 2.291 | 87.50 | 4.40 | 850 |
+  | ERM | 2 | 2.254 | 3.553 | 82.42 | 1.44 | 850 |
+  | mixup | 1 | 2.719 | 2.352 | 88.67 | 1.58 | 853 |
+  | mixup | 2 | 9.338 | 9.17e9 | 89.45 | 1.46 | 853 |
+
+- Timing: about 1.45 s per 8-batch epoch, including validation. ERM epoch 1 includes GPU warm-up.
+  Rough extrapolation is 30-60 s per full 352-batch epoch, so 25-50 min per run. This is unverified:
+  the first epoch of the first main run gives the real figure.
+- Memory: about 850 MB peak, a small fraction of the T4's 15 GB. Batch 128 is not memory-limited.
+- Unexpected behaviour:
+  - mixup epoch 2: training objective 9.34 and validation loss 9.2e9 at chance-level error.
+    Likely cause: only 16 SGD steps at lr 0.1 with no warm-up (early loss spikes are common), and
+    eval-mode BatchNorm running statistics that are still far from the true activation statistics
+    after 16 updates, producing a few extreme logits. The mixup code matches upstream, so this
+    is not believed to be a bug, but it is not yet ruled out.
+  - Wall-clock time was much longer than training compute. It was dominated by the CIFAR-10
+    download, four ~135 MB checkpoint writes to Drive, and start-up. Colab did not display the
+    output of the subprocess commands, so progress was not visible while it ran.
+  - A nested `pilot/pilot` output folder appeared on Drive. The code appends `pilot` to `--output`,
+    so an output path already ending in `pilot` was nested again.
+- Changes after the pilot, before any main run (commit c9f3064): history files are named per run
+  (`<method>_seed<seed>_history.csv`), and `pilot` is no longer appended when the output path
+  already ends in `pilot`. This changes the source hash, so the pilot is rerun with the new ZIP and
+  the old pilot folder is set aside.
+- Interpretation: the pipeline is feasible on a free T4. The pilot says nothing about mixup's effect.
+- Check on the first main runs: after epoch 1, validation error should be well below 90% with a
+  finite validation loss. If either method stays near chance with an extreme validation loss after
+  a few full epochs, stop and investigate before continuing.
+- Next action: rerun the pilot with the new ZIP, finalise any remaining pre-run code changes, then
+  start `erm` seed 1.
+
 ## Entry template
 
 Date / run identifier:
