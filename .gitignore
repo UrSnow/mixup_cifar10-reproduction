@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv*/
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints/
+.env
+
+# Datasets (CIFAR-10 is downloaded on demand)
+data/
+cifar-10-batches-py/
+cifar-10-python.tar.gz
+
+# Training outputs and checkpoints (copy final metrics/figures into results/ deliberately)
+runs/
+*.pt
+*.pth
+*.ckpt
+*.tmp
+
+# Generated Colab upload bundle (rebuild with scripts/package_colab.py)
+*.zip
+
+# Course material, papers, proposal and slides (copyright / personal details)
+*.pdf
+*.pptx
+*.docx
+~$*
+
+# Editors and OS
+.vscode/
+.idea/
+.claude/settings.local.json
+.DS_Store
+Thumbs.db
+desktop.ini

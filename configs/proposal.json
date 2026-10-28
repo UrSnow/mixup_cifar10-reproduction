@@ -1,0 +1,16 @@
+{
+  "experiment": "mixup-cifar10-proposal-v1",
+  "epochs": 50,
+  "batch_size": 128,
+  "lr": 0.1,
+  "momentum": 0.9,
+  "weight_decay": 0.0001,
+  "milestones": [25, 38],
+  "alpha": 1.0,
+  "seeds": [1, 2, 3],
+  "split_seed": 2026,
+  "validation_per_class": 500,
+  "num_workers": 2,
+  "mean": [0.4914, 0.4822, 0.4465],
+  "std": [0.2023, 0.1994, 0.2010]
+}
