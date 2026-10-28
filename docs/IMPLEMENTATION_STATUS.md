@@ -45,7 +45,8 @@ The changes in commit c9f3064 (per-run history file names, no nested `pilot` fol
 pre-run changes (`--save-every` checkpoints, paired-difference SD and per-seed table in the summary,
 streamed notebook output) pass all 9 tests locally with torch 2.14.1+cpu, Python 3.12. The new test
 interrupts a run between checkpoints and checks that resuming reproduces the uninterrupted weights.
-They still need the pilot rerun on Colab.
+The pilot rerun on Colab passed all 9 tests and reproduced the first pilot's metrics bit for bit
+(see `EXPERIMENT_LOG.md`).
 
 ## Not yet verified
 

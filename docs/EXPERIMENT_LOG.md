@@ -42,7 +42,8 @@
   (Corrected: an earlier version of this entry said the Colab browser interface was used.)
 - The test cell finished without an exception (`check=True`), so all 8 tests passed on the Colab
   runtime. CIFAR-10 downloaded, Drive mounted, and deterministic mode raised no CUDA error.
-- Results (copies in `results/pilot/`; ERM identity confirmed by the notebook's printed history):
+- Results (copies in `results/pilot/before_fixes/`; ERM identity confirmed by the notebook's
+  printed history and by the later rerun):
 
   | Method | Epoch | Train objective | Val loss | Val error (%) | Compute (s) | Peak GPU (MB) |
   |---|---:|---:|---:|---:|---:|---:|
@@ -96,6 +97,30 @@
   validation-selected checkpoints are tested. Each run's selected epoch is recorded instead.
 - Tests: 9 pass locally (one new test interrupts a run between checkpoints and resumes it).
 - Next action: rebuild and upload the ZIP, rerun the pilot on Colab, then start `erm` seed 1.
+
+## 2026-10-28: pilot reruns with the pre-run code
+
+- Purpose: check the pre-run changes on Colab (tests, `--save-every`, history file names, streamed
+  output) and whether results reproduce across sessions.
+- Code: commit fd292f6 for `mixup_repro/`, with the notebook restored in 6c993c9. An editor save had
+  overwritten the notebook changes before fd292f6 was committed; 6c993c9 restored them.
+- Runtime: VS Code connected to a Colab runtime, Tesla T4, Python 3.13.16, torch 2.11.0+cu130.
+- Second pilot run: completed, but its notebook outputs were cleared and its pilot folder on Drive
+  was deleted before the results were inspected. Nothing from it was recorded or used.
+- Third pilot run (copies in `results/pilot/after_fixes/`):
+  - All 9 tests passed on Colab, with output now visible in the notebook.
+  - `[checkpoint saved]` appeared only at epoch 2 of each 2-epoch run, as expected with
+    `--save-every 5`. History files were written as `<method>_seed1_history.csv` in a single
+    `pilot/` folder.
+  - Every logged training and validation value (train objective, validation loss and error, peak
+    GPU memory) is bit-for-bit identical to the first pilot, for both methods. Only compute time
+    differs (ERM epoch 1: 2.09 s versus 4.40 s).
+- Interpretation: training is deterministic across Colab sessions on the same GPU and software,
+  so resume after a disconnect and the ERM/mixup pairing behave as designed. The mixup epoch 2 loss
+  spike reproduced exactly, so it is a deterministic property of those 16 steps, not chance. The
+  explanation in the first pilot entry is unchanged and still to be confirmed at full scale.
+- Still open: whether replaced checkpoints accumulate in Drive's trash.
+- Next action: start `erm` seed 1 and check the first full epochs (time, validation error).
 
 ## Entry template
 
