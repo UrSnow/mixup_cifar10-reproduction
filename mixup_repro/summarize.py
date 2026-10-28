@@ -44,7 +44,7 @@ def summarize(output):
     fig,axes=plt.subplots(1,2,figsize=(11,4))
     for seed in seeds:
         for method in ('erm','mixup'):
-            path=output/f'{method}_seed{seed}'/'history.csv'
+            path=output/f'{method}_seed{seed}'/f'{method}_seed{seed}_history.csv'
             with path.open() as f: history=list(csv.DictReader(f))
             epochs=[int(r['epoch']) for r in history]
             color='tab:blue' if method=='erm' else 'tab:orange'

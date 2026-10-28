@@ -160,7 +160,7 @@ class ProtocolTests(unittest.TestCase):
                 for method,error in [('erm',erm),('mixup',mix)]:
                     rows.append({'seed':seed,'method':method,'error_pct':error})
                     directory=out/f'{method}_seed{seed}'; directory.mkdir()
-                    (directory/'history.csv').write_text('epoch,train_objective,validation_error_pct\n1,1.5,50\n2,1.0,40\n')
+                    (directory/f'{method}_seed{seed}_history.csv').write_text('epoch,train_objective,validation_error_pct\n1,1.5,50\n2,1.0,40\n')
             atomic_json(out/'test_results.json',{'manifest_sha256':file_hash(out/'frozen.json'),'runs':rows})
             summarize(out)
             report=(out/'summary.md').read_text()

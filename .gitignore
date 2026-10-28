@@ -4,6 +4,8 @@ __pycache__/
 .venv*/
 *.egg-info/
 .pytest_cache/
+.mypy_cache/
+.ruff_cache/
 .ipynb_checkpoints/
 .env
 
@@ -14,6 +16,8 @@ cifar-10-python.tar.gz
 
 # Training outputs and checkpoints (copy final metrics/figures into results/ deliberately)
 runs/
+mixup-reproduction-v*/
+sample_data/
 *.pt
 *.pth
 *.ckpt

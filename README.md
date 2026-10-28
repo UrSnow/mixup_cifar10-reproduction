@@ -72,7 +72,7 @@ the training split; downloaded test images are not loaded or evaluated until the
 
 - `split.json`: fixed train/validation indices, label hash and split seed.
 - `<method>_seed<seed>/checkpoint.pt`: latest full state plus validation-selected best weights.
-- `<method>_seed<seed>/history.csv`: training objective, validation metrics, compute time and peak GPU memory.
+- `<method>_seed<seed>/<method>_seed<seed>_history.csv`: training objective, validation metrics, compute time and peak GPU memory.
 - `frozen.json`: completion checks and hashes of all six selected-run containers.
 - `test_results.json`, `paired_results.csv`, `summary.md`, `learning_curves.png`: final measured evidence.
 

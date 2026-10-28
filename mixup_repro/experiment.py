@@ -163,7 +163,7 @@ def write_history(run, rows):
     writer = csv.DictWriter(stream, fieldnames=list(rows[0]))
     writer.writeheader()
     writer.writerows(rows)
-    path = Path(run) / 'history.csv'
+    path = Path(run) / f'{Path(run).name}_history.csv'
     temp = path.with_suffix('.csv.tmp')
     temp.write_text(stream.getvalue(), encoding='utf-8')
     temp.replace(path)
@@ -322,7 +322,7 @@ def main():
         parser.error('--seed must be listed in the config')
     if args.command=='train' and args.method is None:
         parser.error('train requires --method erm or --method mixup')
-    if args.command=='pilot':
+    if args.command=='pilot' and output.name!='pilot':
         output=output/'pilot'
     train,val,split_hash=development_data(cfg,args.data,output,args.download)
     if args.command=='train':
