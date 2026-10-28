@@ -227,6 +227,39 @@ No test data was loaded.
   1.9 points.
 - Next action: `mixup` seed 3, the last run before the freeze.
 
+## 2026-10-28: `mixup` seed 3, two disconnects, and the pre-freeze check
+
+No test data was loaded.
+
+- Selected checkpoint: epoch 48, validation error 6.16%. Final epoch 6.54%.
+- The network dropped twice during the run. Both times I reconnected VS Code to the same Colab
+  runtime with the same settings and ran **Training** again with `--resume`.
+- Epoch times show what happened. Epochs 1-20 took about 60 s each; epochs 21-45 took about 126 s;
+  epoch 46 took 159 s, epoch 47 89 s, and epochs 48-50 60 s again. The checkpoint records a single
+  runtime (Tesla T4, Python 3.13.16, torch 2.11.0+cu130, CUDA 13.0), so the hardware did not change.
+  The doubled time fits two copies of the run sharing the GPU: after the first disconnect the
+  original process was most likely still running on the same runtime when the resumed one started,
+  and a third overlapped briefly after the second disconnect. With deterministic training on the
+  same GPU every copy computes identical values, so this costs time, not correctness. It did put two
+  writers on the same checkpoint, which the notebook warns against.
+- Pre-freeze check (a notebook cell that reads only the training files): for all six runs the
+  checkpoint loads, is at epoch 50, the history has exactly epochs 1-50, and the history CSV matches
+  the history stored in the checkpoint. No run shows slow epochs except mixup seed 3.
+
+  | Seed | ERM selected (val %) | mixup selected (val %) |
+  |---|---:|---:|
+  | 1 | 7.20 (epoch 41) | 17.98 (epoch 49) |
+  | 2 | 7.94 (epoch 40) | 8.82 (epoch 47) |
+  | 3 | 6.04 (epoch 46) | 6.16 (epoch 48) |
+
+- Lesson for future runs: after a disconnect, check whether the history file on Drive is still
+  growing before resuming. If it is, the original run is still alive and should be left alone.
+- Decision, made before any test access: freeze all six runs as they are. No run is excluded or
+  repeated, and nothing in the protocol or the analysis changes. The test evaluation reports each
+  test error, the mean and sample SD per method, and the paired ERM-minus-mixup differences, as
+  pre-registered.
+- Next action: freeze, then evaluate the test set once, then summarize.
+
 ## Entry template
 
 Date / run identifier:
