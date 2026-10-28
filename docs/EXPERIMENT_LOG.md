@@ -175,6 +175,18 @@ No test data was loaded for anything in this entry.
   compute allows.
 - Next action: `erm` seed 2, then `mixup` seed 2.
 
+## 2026-10-28: `erm` seed 2
+
+No test data was loaded.
+
+- 50 epochs in one session, no interruption, about 59 s per epoch. Same code and config as seed 1.
+- Selected checkpoint: epoch 40, validation error 7.94% (tied with epoch 48; the earlier epoch is
+  selected by design). Final epoch 8.08%.
+- The curve has the same shape as seed 1: about 13-14% before the first lr drop, a fall to about
+  8.5% at epoch 26, and little change after epoch 38. Seed 2 ends 0.74 points above seed 1
+  (7.94% vs 7.20%), which is ordinary seed-to-seed variation for single runs.
+- Next action: `mixup` seed 2.
+
 ## Entry template
 
 Date / run identifier:

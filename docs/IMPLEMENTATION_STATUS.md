@@ -51,7 +51,7 @@ The pilot rerun on Colab passed all 9 tests and reproduced the first pilot's met
 ## Not yet verified
 
 - Whether replaced checkpoints accumulate in Drive's trash and consume quota.
-- Six completed runs (2 of 6 done: seed 1 pair) or any scientific reproduction result.
+- Six completed runs (3 of 6 done: seed 1 pair, `erm` seed 2) or any scientific reproduction result.
 
 Measured on 2026-10-28: a full epoch takes about 60 s on a T4, so a 50-epoch run takes ~50 min.
 Both seed 1 runs learned normally from the first epoch; mixup underfits at this budget (see
