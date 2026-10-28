@@ -214,6 +214,19 @@ No test data was loaded.
   after the freeze.
 - Next action: `erm` seed 3, then `mixup` seed 3.
 
+## 2026-10-28: `erm` seed 3
+
+No test data was loaded.
+
+- 50 epochs in one session, no interruption, about 59.5 s per epoch. The notebook now restores the
+  CIFAR-10 archive from a copy on Drive (`MyDrive/cifar10-cache/`) after **Setup + tests**, so a new
+  runtime does not download it again; torchvision checks the archive's MD5 before using it.
+- Selected checkpoint: epoch 46, validation error 6.04%. Final epoch 6.18%.
+- Seed 3 started faster than the other ERM seeds (52.60% at epoch 1, against 64.82% and 68.10%) and
+  ends lowest. ERM's selected validation errors across seeds: 7.20, 7.94 and 6.04%, a range of
+  1.9 points.
+- Next action: `mixup` seed 3, the last run before the freeze.
+
 ## Entry template
 
 Date / run identifier:
