@@ -1,0 +1,85 @@
+{
+  "config": {
+    "experiment": "mixup-cifar10-proposal-v1",
+    "epochs": 50,
+    "batch_size": 128,
+    "lr": 0.1,
+    "momentum": 0.9,
+    "weight_decay": 0.0001,
+    "milestones": [
+      25,
+      38
+    ],
+    "alpha": 1.0,
+    "seeds": [
+      1,
+      2,
+      3
+    ],
+    "split_seed": 2026,
+    "validation_per_class": 500,
+    "num_workers": 2,
+    "mean": [
+      0.4914,
+      0.4822,
+      0.4465
+    ],
+    "std": [
+      0.2023,
+      0.1994,
+      0.201
+    ]
+  },
+  "source_hash": "dfcc812ed13bdc7f73860c929e1bcc6c9a8e3b6070ca16f06097fe152acab9a4",
+  "split_hash": "a24419d470b3f1dcc50df3aab63442f470a3f0f39bfc2e0c2d2d54a1131c50e4",
+  "runs": [
+    {
+      "method": "erm",
+      "seed": 1,
+      "checkpoint": "erm_seed1/checkpoint.pt",
+      "sha256": "3707953c705a69909aad3a80cfa638970208cb057f681db51ac3495de17ccb40",
+      "best_epoch": 41,
+      "best_validation_error_pct": 7.2
+    },
+    {
+      "method": "mixup",
+      "seed": 1,
+      "checkpoint": "mixup_seed1/checkpoint.pt",
+      "sha256": "6084f5e3afe61a945c133495b2d620e136224eae1250b8fe46c9986647e2f21f",
+      "best_epoch": 49,
+      "best_validation_error_pct": 17.98
+    },
+    {
+      "method": "erm",
+      "seed": 2,
+      "checkpoint": "erm_seed2/checkpoint.pt",
+      "sha256": "5392290fd97abe82541bc524458af7c80c46ede24ff5e45fb27d691785a9668a",
+      "best_epoch": 40,
+      "best_validation_error_pct": 7.94
+    },
+    {
+      "method": "mixup",
+      "seed": 2,
+      "checkpoint": "mixup_seed2/checkpoint.pt",
+      "sha256": "6eeb90f1f3db578493648ea80f76c06ae2068089176b9bb6b20aaea3081e0f7e",
+      "best_epoch": 47,
+      "best_validation_error_pct": 8.82
+    },
+    {
+      "method": "erm",
+      "seed": 3,
+      "checkpoint": "erm_seed3/checkpoint.pt",
+      "sha256": "fac53daf4a177db872ce2a18fa14094ab4f07f3f5d4aa22f3f284bdb1b88d385",
+      "best_epoch": 46,
+      "best_validation_error_pct": 6.04
+    },
+    {
+      "method": "mixup",
+      "seed": 3,
+      "checkpoint": "mixup_seed3/checkpoint.pt",
+      "sha256": "e2e126704ce16f7fcd15230e654fbc9184deb805215c9d4fe73a6b71815dacb0",
+      "best_epoch": 48,
+      "best_validation_error_pct": 6.16
+    }
+  ]
+}

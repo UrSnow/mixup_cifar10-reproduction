@@ -260,6 +260,43 @@ No test data was loaded.
   pre-registered.
 - Next action: freeze, then evaluate the test set once, then summarize.
 
+## 2026-10-28 to 29: freeze, the single test evaluation, and the result
+
+- Freeze: "Frozen all runs. Evaluation may now load the test dataset." Training on `main/` is locked.
+- Evaluation, run once: "Saved final test metrics. All values are from selected validation
+  checkpoints." The test set was loaded here for the first and only time. Nothing was rerun.
+- Summary (`mixup_repro.summarize`), test error in %:
+
+  | Seed | ERM | mixup | ERM minus mixup (pp) |
+  |---:|---:|---:|---:|
+  | 1 | 7.71 | 17.77 | -10.06 |
+  | 2 | 8.71 | 9.72 | -1.01 |
+  | 3 | 7.19 | 6.94 | +0.25 |
+  | Mean (sample SD) | 7.870 (0.773) | 11.477 (5.625) | -3.607 (5.624) |
+
+  Mixup wins 1 of 3 pairs. Negative differences favour ERM.
+- Result: at this reduced budget (50 epochs, 45,000 training images), mixup with alpha 1 did not
+  improve on ERM. The paper's claim (Fig. 3(a), mixup 4.2% vs ERM 5.6% after 200 epochs) was not
+  reproduced. The mean difference is dominated by seed 1; on seeds 2 and 3 the two methods are
+  within about one point, and seed 3 favours mixup by 0.25.
+- Consistency with the earlier evidence: the test gaps follow the validation gaps (validation
+  10.78, 0.88, 0.12 points against ERM; test 10.06, 1.01, -0.25), so checkpoint selection on
+  validation transferred to the test set. Test errors sit 0.5-1.2 points above the selected
+  validation errors for ERM, as expected when the checkpoint is chosen on the validation set.
+- Interpretation and limits:
+  - The seed 1 diagnostic showed mixup underfitting (15.7% error on clean training images
+    against 0.46% for ERM), and the small-alpha check ruled out a bug in the mixup code. The
+    paper notes that mixup benefits most from long training and that large alpha leads to
+    underfitting; a quarter of the paper's epochs is the most likely reason mixup falls short.
+  - Mixup's results vary far more across seeds (SD 5.6 points) than ERM's (0.8). With three seeds,
+    the mean difference cannot be separated from that variation, and no significance claim is made.
+  - ERM is also above the paper's 5.6%, which fits the shorter schedule and the 5,000 images held
+    out for validation.
+  - These results apply only to the frozen protocol. They do not show that mixup fails at the
+    paper's full scale.
+- Next action: copy the frozen manifest, test results, summary, learning curves and the six
+  history files from Drive into `results/main/`, and write up.
+
 ## Entry template
 
 Date / run identifier:

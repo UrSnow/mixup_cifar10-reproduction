@@ -48,20 +48,20 @@ interrupts a run between checkpoints and checks that resuming reproduces the uni
 The pilot rerun on Colab passed all 9 tests and reproduced the first pilot's metrics bit for bit
 (see `EXPERIMENT_LOG.md`).
 
+## Main experiment (2026-10-28 to 29)
+
+The main experiment is finished. All six runs passed the pre-freeze check on 2026-10-28, were
+frozen, and were evaluated on the test set once. Mean test error: ERM 7.870% (SD 0.773), mixup
+11.477% (SD 5.625); mean ERM-minus-mixup difference -3.607 points. See `EXPERIMENT_LOG.md`.
+
+A full epoch takes about 60 s on a T4, so a 50-epoch run takes ~50 min. Mixup underfits at this
+budget, and a small-alpha check found no bug in the mixup code path. A real resume on the GPU was
+verified: after a lost connection, `mixup` seed 2 resumed on a new runtime and reproduced its
+epoch 21 validation error exactly (25.92%).
+
 ## Not yet verified
 
 - Whether replaced checkpoints accumulate in Drive's trash and consume quota.
-- Any scientific reproduction result. All six runs are complete and passed the pre-freeze check
-  on 2026-10-28; the freeze and the single test evaluation have not been run yet.
-
-Measured on 2026-10-28: a full epoch takes about 60 s on a T4, so a 50-epoch run takes ~50 min.
-Both seed 1 runs learned normally from the first epoch; mixup underfits at this budget (see
-`EXPERIMENT_LOG.md`), and a small-alpha check found no bug in the mixup code path.
-A real resume on the GPU was verified on 2026-10-28: after a lost connection, `mixup` seed 2 resumed
-on a new runtime and reproduced its epoch 21 validation error exactly (25.92%).
-
-Next milestone: rerun the pilot with the rebuilt ZIP, then start the first main run and check
-its first epochs before continuing. The pilot uses only development data.
 
 ## Local setup note
 
