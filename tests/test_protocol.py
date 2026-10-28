@@ -92,6 +92,26 @@ class ProtocolTests(unittest.TestCase):
                 train_run(changed,'mixup',1,TinyData(),TinyData(),'synthetic',base/'resume',device,resume=True,model_factory=tiny_model)
 
     @patch('mixup_repro.experiment.environment',return_value={'test':'synthetic'})
+    def test_resume_reruns_epochs_after_last_checkpoint(self,_):
+        cfg={'epochs':4,'batch_size':4,'lr':.1,'momentum':.9,'weight_decay':.0001,
+             'milestones':[2],'alpha':1.,'seeds':[1],'num_workers':0}
+        device=torch.device('cpu')
+        with tempfile.TemporaryDirectory() as temp:
+            base=Path(temp)
+            full=train_run(cfg,'mixup',1,TinyData(),TinyData(),'synthetic',base/'full',device,model_factory=tiny_model)
+            # Epoch 3 completes but is not saved (save_every=2), as after a disconnect.
+            path=train_run(cfg,'mixup',1,TinyData(),TinyData(),'synthetic',base/'gap',device,stop_after=3,
+                           model_factory=tiny_model,save_every=2)
+            self.assertEqual(torch.load(path,weights_only=False)['epoch'],2)
+            resumed=train_run(cfg,'mixup',1,TinyData(),TinyData(),'synthetic',base/'gap',device,resume=True,
+                              model_factory=tiny_model,save_every=2)
+            a=torch.load(full,weights_only=False); b=torch.load(resumed,weights_only=False)
+            self.assertEqual((b['epoch'],len(b['history'])),(4,4))
+            self.assertEqual(weights_hash(a['model']),weights_hash(b['model']))
+            self.assertEqual(a['best_epoch'],b['best_epoch'])
+            self.assertEqual(weights_hash(a['best_model']),weights_hash(b['best_model']))
+
+    @patch('mixup_repro.experiment.environment',return_value={'test':'synthetic'})
     def test_freeze_rejects_incomplete_runs_and_blocks_later_training(self,_):
         from mixup_repro.core import digest
         cfg={'epochs':2,'batch_size':4,'lr':.1,'momentum':.9,'weight_decay':.0001,
@@ -167,6 +187,8 @@ class ProtocolTests(unittest.TestCase):
             self.assertIn('| erm | 11.000 | 1.000 |',report)
             self.assertIn('| mixup | 9.667 | 2.082 |',report)
             self.assertIn('Mean paired improvement: 1.333',report)
+            self.assertIn('sample SD of paired differences: 2.082',report)
+            self.assertIn('| 3 | 11.00 | 12.00 | -1.00 |',report)
             self.assertIn('Mixup wins: 2/3',report)
             self.assertTrue((out/'learning_curves.png').stat().st_size>1000)
 

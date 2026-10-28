@@ -76,6 +76,26 @@
 - Next action: rerun the pilot with the new ZIP, finalise any remaining pre-run code changes, then
   start `erm` seed 1.
 
+## 2026-10-28: final code changes before the main runs
+
+- Purpose: settle all code changes before `erm` seed 1 starts. After that, any change to
+  `mixup_repro/` changes the source hash, which blocks resuming and freezing existing runs.
+- Checkpoints are now written every 5 epochs and at the final epoch (`--save-every`, default 5)
+  instead of every epoch. Reason: each checkpoint is ~135 MB, and 300 writes to Drive (~40 GB) risk
+  slow sessions and, if Drive keeps replaced files in the trash, exceeding the 15 GB quota.
+  A disconnect now loses up to 4 epochs. Resume reruns them with the same per-epoch seeds, so the
+  result is unchanged. `--save-every` is not stored in the run metadata, so it can differ between
+  sessions without blocking resume. Training, selection and evaluation rules are unchanged.
+- `summary.md` now also reports a per-seed table and the sample SD of the paired ERM-minus-mixup
+  differences. Pairing removes seed-level variation, so this is the relevant spread for the claim.
+  Reporting only; no protocol change.
+- The notebook's `run()` now streams subprocess output, so test results and epoch lines appear in
+  Colab while they run. Notebook only; it is not part of the source hash.
+- Considered and rejected: also testing the last-epoch weights. The submitted proposal says only
+  validation-selected checkpoints are tested. Each run's selected epoch is recorded instead.
+- Tests: 9 pass locally (one new test interrupts a run between checkpoints and resumes it).
+- Next action: rebuild and upload the ZIP, rerun the pilot on Colab, then start `erm` seed 1.
+
 ## Entry template
 
 Date / run identifier:

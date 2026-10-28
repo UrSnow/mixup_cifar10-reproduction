@@ -170,10 +170,17 @@ def write_history(run, rows):
 
 
 def train_run(cfg, method, seed, train, val, split_hash, output, device, resume=False,
-              stop_after=None, model_factory=ResNet18, scope='main'):
-    """Epoch-boundary resume. stop_after is for interrupted-run verification only."""
+              stop_after=None, model_factory=ResNet18, scope='main', save_every=1):
+    """Epoch-boundary resume. stop_after is for interrupted-run verification only.
+
+    Checkpoints are written every save_every epochs and at the final epoch. Epochs after the
+    last checkpoint are rerun on resume; per-epoch reseeding makes the rerun identical.
+    save_every is not part of the run metadata, so it may differ between sessions.
+    """
     if method not in METHODS or seed not in cfg['seeds']:
         raise ValueError('Method/seed is outside this protocol')
+    if save_every < 1:
+        raise ValueError('save_every must be at least 1')
     if (Path(output)/'frozen.json').exists():
         raise RuntimeError('Protocol frozen for testing; training is now locked')
     run = Path(output)/f'{method}_seed{seed}'
@@ -225,14 +232,17 @@ def train_run(cfg, method, seed, train, val, split_hash, output, device, resume=
                'validation_error_pct':result['error_pct'], 'compute_seconds':seconds,
                'peak_gpu_mb':torch.cuda.max_memory_allocated()/1024**2 if device.type=='cuda' else 0.}
         history.append(row)
-        state = {'metadata':metadata, 'epoch':epoch, 'model':cpu_state(model),
-                 'optimizer':optimizer.state_dict(), 'best_model':best_model,
-                 'best_epoch':best_epoch, 'best_error':best_error, 'history':history,
-                 'initial_weights_sha256':initial_hash, 'environments':envs}
-        atomic_checkpoint(checkpoint, state)
+        saved = epoch % save_every == 0 or epoch == cfg['epochs']
+        if saved:
+            state = {'metadata':metadata, 'epoch':epoch, 'model':cpu_state(model),
+                     'optimizer':optimizer.state_dict(), 'best_model':best_model,
+                     'best_epoch':best_epoch, 'best_error':best_error, 'history':history,
+                     'initial_weights_sha256':initial_hash, 'environments':envs}
+            atomic_checkpoint(checkpoint, state)
         write_history(run, history)
         print(f'{method} seed={seed} epoch={epoch}/{cfg["epochs"]} '
-              f'val_error={result["error_pct"]:.2f}% lr={lr:g} compute={seconds:.1f}s', flush=True)
+              f'val_error={result["error_pct"]:.2f}% lr={lr:g} compute={seconds:.1f}s'
+              f'{" [checkpoint saved]" if saved else ""}', flush=True)
     if history:
         write_history(run, history)
     return checkpoint
@@ -308,7 +318,11 @@ def main():
     parser.add_argument('--seed',type=int,default=1)
     parser.add_argument('--resume',action='store_true')
     parser.add_argument('--download',action='store_true')
+    parser.add_argument('--save-every',type=int,default=5,
+                        help='write checkpoint.pt every N epochs and at the final epoch (default 5)')
     args=parser.parse_args()
+    if args.save_every<1:
+        parser.error('--save-every must be at least 1')
     cfg=read_config(args.config)
     output=Path(args.output)
     if args.command=='freeze':
@@ -326,7 +340,8 @@ def main():
         output=output/'pilot'
     train,val,split_hash=development_data(cfg,args.data,output,args.download)
     if args.command=='train':
-        train_run(cfg,args.method,args.seed,train,val,split_hash,output,device,args.resume)
+        train_run(cfg,args.method,args.seed,train,val,split_hash,output,device,args.resume,
+                  save_every=args.save_every)
     else:
         rng=np.random.default_rng(cfg['split_seed']+1)
         train=Subset(train,rng.choice(len(train),min(1024,len(train)),replace=False).tolist())
@@ -334,7 +349,8 @@ def main():
         pilot=copy.deepcopy(cfg)
         pilot.update(epochs=2,milestones=[])
         for method in METHODS:
-            train_run(pilot,method,args.seed,train,val,split_hash,output,device,args.resume,scope='pilot')
+            train_run(pilot,method,args.seed,train,val,split_hash,output,device,args.resume,scope='pilot',
+                      save_every=args.save_every)
         print('Pilot only: 1,024 train / 256 validation images. These are NOT reproduction results.',flush=True)
 
 

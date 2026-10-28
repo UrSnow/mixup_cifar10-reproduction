@@ -48,9 +48,11 @@ based on observed gains. A failed reproduction at reduced scale does not alone r
 ## Resume and provenance
 
 Each checkpoint atomically contains the last model, optimizer, selected best model, complete epoch
-history, initial-weight hash, config, split hash, code hash and environment records. Resume starts at
-the next complete epoch. Data shuffle, augmentation and mixup streams are reset from the paired seed
-and epoch. Interrupted partial epochs are rerun. Equality across different GPUs/software is not promised.
+history, initial-weight hash, config, split hash, code hash and environment records. Checkpoints are
+written every 5 epochs (`--save-every`) and at the final epoch, to limit ~135 MB writes to Drive;
+the history CSV is still written every epoch. Resume starts after the last saved epoch. Data shuffle,
+augmentation and mixup streams are reset from the paired seed and epoch, so unsaved and interrupted
+epochs are rerun identically. Equality across different GPUs/software is not promised.
 Runs use one process at a time per output folder. Do not edit code or config halfway through a run.
 
 The frozen manifest verifies completion and identical pair initialization, and hashes all checkpoints.

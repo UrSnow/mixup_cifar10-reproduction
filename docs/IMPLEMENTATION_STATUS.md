@@ -39,8 +39,13 @@ On a Tesla T4 with Python 3.13.16 and torch 2.11.0+cu130:
 
 See `EXPERIMENT_LOG.md` for details and the early mixup loss spike.
 
-The commit c9f3064 changes (per-run history file names, no nested `pilot` folder) compile but
-have not been run through the tests yet; the pilot rerun on Colab will do that.
+## Pre-run changes (2026-10-28)
+
+The changes in commit c9f3064 (per-run history file names, no nested `pilot` folder) and the later
+pre-run changes (`--save-every` checkpoints, paired-difference SD and per-seed table in the summary,
+streamed notebook output) pass all 9 tests locally with torch 2.14.1+cpu, Python 3.12. The new test
+interrupts a run between checkpoints and checks that resuming reproduces the uninterrupted weights.
+They still need the pilot rerun on Colab.
 
 ## Not yet verified
 

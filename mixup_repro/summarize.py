@@ -33,8 +33,15 @@ def summarize(output):
         values=[by_key[s,m]['error_pct'] for s in seeds]
         sd=f'{stdev(values):.3f}' if len(values)>1 else 'not estimable (one seed)'
         lines.append(f'| {m} | {mean(values):.3f} | {sd} |')
+    lines+=['','| Seed | ERM test error (%) | mixup test error (%) | ERM minus mixup (pp) |',
+            '|---:|---:|---:|---:|']
+    lines+=[f"| {p['seed']} | {p['erm_error_pct']:.2f} | {p['mixup_error_pct']:.2f} | {p['improvement_pp']:+.2f} |"
+            for p in paired]
     differences=[p['improvement_pp'] for p in paired]
-    lines+=['',f'Mean paired improvement: {mean(differences):.3f} percentage points.',
+    # Pairing cancels seed-level noise, so the SD of the differences is the relevant spread.
+    diff_sd=f'{stdev(differences):.3f}' if len(differences)>1 else 'not estimable (one seed)'
+    lines+=['',f'Mean paired improvement: {mean(differences):.3f} percentage points '
+            f'(sample SD of paired differences: {diff_sd}).',
             f'Mixup wins: {sum(d>0 for d in differences)}/{len(seeds)}; ties: {sum(d==0 for d in differences)}.',
             '', 'These results apply to the frozen reduced-scale protocol. No significance claim is inferred from three seeds.']
     (output/'summary.md').write_text('\n'.join(lines)+'\n',encoding='utf-8')

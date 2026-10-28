@@ -64,6 +64,8 @@ python -m mixup_repro.summarize --output /content/drive/MyDrive/mixup-reproducti
 The default device is CUDA and commands fail clearly if no GPU is available. `--device cpu` is
 for debugging only. One run per output folder at a time. `--resume` restores an existing run or
 starts it if absent. It does not extend the configured budget. After freezing, training is blocked.
+`checkpoint.pt` is written every 5 epochs and at the final epoch (`--save-every N` changes this);
+after a disconnect, `--resume` reruns the epochs since the last checkpoint with the same seeds.
 
 The standard CIFAR download archive includes test files. Development commands only instantiate
 the training split; downloaded test images are not loaded or evaluated until the explicit evaluator.
