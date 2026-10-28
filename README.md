@@ -1,89 +1,115 @@
 # mixup reproduction on CIFAR-10
 
-This project tests whether mixup lowers CIFAR-10 test error compared with ordinary training
-under the submitted reduced-scale protocol. It implements Figure 3(a)'s PreAct ResNet-18 comparison.
-It contains no claimed reproduction results yet.
+A reduced-scale reproduction of one claim from Zhang et al., *mixup: Beyond Empirical Risk
+Minimization* (ICLR 2018): **Section 3.2, the table in Figure 3(a)**, where a PreAct ResNet-18 on
+CIFAR-10 reaches 4.2% test error with mixup (alpha = 1) against 5.6% with ordinary training (ERM).
 
-Start with **`notebooks/01_colab_pilot.ipynb`**. Run it on a Colab GPU runtime, either from VS Code
-connected to Colab (used for the 2026-10-28 pilot) or in the Colab browser interface.
-Put `mixup-colab-project.zip` in the top level of your Google Drive first.
-The notebook first runs protocol checks and a small pilot. Full experiments and testing require
-explicit switches, so running all cells does not silently launch six training runs or inspect test data.
+This reproduction trains for 50 epochs instead of 200, holds out 5,000 training images for
+validation, uses three paired seeds, and opens the test set once, after a freeze.
+The write-up is in [`paper/`](paper/).
 
-## Files to read first
+## Result
 
-- `configs/proposal.json`: settings from the submitted proposal plus explicit seed choices.
-- `docs/PROTOCOL.md`: experimental rules, deviations, checkpoint selection and limitations.
-- `docs/EXPERIMENT_LOG.md`: keep an honest record of attempts and decisions.
-- `docs/IMPLEMENTATION_STATUS.md`: checks completed and what still needs verification on Colab.
-- `vendor/PROVENANCE.md`: source and license attribution.
-- `mixup_repro/experiment.py`: pilot, training, freeze and evaluation.
-- `tests/test_protocol.py`: leakage, loss, architecture, resume and selection checks.
+The improvement did not reproduce at this budget.
 
-## Environment
+| Seed | ERM test error (%) | mixup test error (%) | ERM minus mixup (pp) |
+|---:|---:|---:|---:|
+| 1 | 7.71 | 17.77 | -10.06 |
+| 2 | 8.71 | 9.72 | -1.01 |
+| 3 | 7.19 | 6.94 | +0.25 |
+| Mean (SD) | 7.87 (0.77) | 11.48 (5.62) | -3.61 (5.62) |
+| Paper | 5.6 | 4.2 | +1.4 |
 
-Python 3.12 is used for local checks. Colab supplies torch/torchvision with CUDA support.
-Do not replace that GPU build with the CPU wheels used for local testing.
-Install other missing requirements as needed; each checkpoint records actual package versions.
-The broad requirements file is a compatibility declaration, not an exact environment lock.
-Local verification versions are recorded separately in `docs/local-test-environment.txt`.
-After a reviewed code/config change, rebuild the upload ZIP with `python scripts/package_colab.py`.
-Use a new output directory for a revised protocol; do not resume old runs with changed code.
+mixup won 1 of 3 pairs. A diagnosis on seed 1 shows that mixup underfits at 50 epochs (15.72% error
+on clean training images, against 0.46% for ERM), and a control run with alpha = 0.001 behaves like
+ERM, so the gap is not an implementation bug. Details, interpretation and limits:
+[`paper/main.tex`](paper/main.tex) and [`docs/EXPERIMENT_LOG.md`](docs/EXPERIMENT_LOG.md).
 
-From this directory, local setup (optional, full training should use Colab):
+## Reproduce every number and figure
 
-```powershell
-python -m venv .venv
-.venv\Scripts\python -m pip install -r requirements.txt
-.venv\Scripts\python -m unittest discover -s tests -v
-```
-
-## Commands (Colab or a prepared Python environment)
-
-The output folder should be on Google Drive for persistence; dataset files can stay in `/content`.
+Set up the environment once (conda):
 
 ```bash
-# 1. Verify software on synthetic inputs (no CIFAR download).
+conda env create -f environment.yml
+conda activate mixup-repro
+```
+
+Then, from a clean checkout:
+
+```bash
+python scripts/reproduce.py --from-results results
+```
+
+This takes a few seconds on a CPU and does not need PyTorch. It:
+
+1. checks the committed results: the test results belong to the frozen manifest, each tested
+   checkpoint is the frozen one, each history agrees with its selected checkpoint, and the code hash
+   in the manifest matches `mixup_repro/` and `vendor/resnet.py` in this checkout;
+2. regenerates every number, table and figure in the write-up into `paper/generated/`;
+3. builds `paper/main.pdf` if `pdflatex` and `bibtex` are installed (add `--no-pdf` to skip).
+
+To rerun the whole experiment instead (a CUDA GPU; about 6 GPU-hours on a Colab T4):
+
+```bash
+python scripts/reproduce.py --data /content/cifar10 --output /content/drive/MyDrive/mixup-rerun
+```
+
+This runs the tests, the six main runs, the small-alpha check, the freeze, the single test
+evaluation, the summary and the seed 1 diagnostic, and then rebuilds the paper from the new
+outputs. If Colab disconnects, run the same command again and it resumes. Afterwards,
+`git diff paper/generated` shows any difference from the committed results. Training is
+deterministic, but bit-identical results are only expected on the same GPU and software
+(Tesla T4, torch 2.11.0+cu130).
+
+## What is in the repository
+
+| Path | Contents |
+|---|---|
+| `mixup_repro/` | Training, freeze, test evaluation (`experiment.py`), loss and split helpers (`core.py`), summary (`summarize.py`) |
+| `vendor/` | The authors' `resnet.py`, unmodified, plus their `train.py` for reference only; see `vendor/PROVENANCE.md` |
+| `configs/` | `proposal.json` (main protocol) and `check_small_alpha.json` (code-path check) |
+| `scripts/` | `reproduce.py` (the command above), `diagnose_mixup.py`, `package_colab.py` |
+| `notebooks/01_colab_pilot.ipynb` | The Colab notebook used for every run, with its outputs |
+| `tests/` | Leakage, loss, architecture, resume and selection tests: `python -m unittest discover -s tests -v` |
+| `results/main/` | Frozen manifest, test results, summary and per-epoch histories of the six runs |
+| `results/checks/`, `results/diagnostics/` | The small-alpha check history and the seed 1 diagnostic output |
+| `results/pilot/` | Pilot outputs (not reproduction results) |
+| `docs/` | `PROTOCOL.md` (rules and deviations), `EXPERIMENT_LOG.md` (every attempt and decision), `IMPLEMENTATION_STATUS.md` |
+| `paper/` | The write-up (IEEE conference format); `paper/generated/` is written by `reproduce.py` |
+
+## Method and sources
+
+The model is the authors' `ResNet18` (PreAct blocks) from
+[facebookresearch/mixup-cifar10](https://github.com/facebookresearch/mixup-cifar10), copied
+unmodified at a pinned commit. The training loop is reimplemented following the authors'
+`train.py` (one lambda per minibatch, a permutation of the same minibatch, weighted cross-entropy),
+with a validation split, paired randomness across methods, resumable checkpoints and provenance
+records added. The protocol and every difference from the paper are in
+[`docs/PROTOCOL.md`](docs/PROTOCOL.md).
+
+## Running on Colab step by step
+
+The notebook `notebooks/01_colab_pilot.ipynb` runs the same commands one at a time. Put
+`mixup-colab-project.zip` (built with `python scripts/package_colab.py`) in the top level of
+Google Drive and open the notebook from VS Code connected to Colab or in the Colab browser
+interface. Training, freezing and testing are off by default and need explicit switches.
+
+The individual commands, for a prepared environment:
+
+```bash
 python -m unittest discover -s tests -v
-
-# 2. Small pilot only. Does not load/evaluate CIFAR test images.
-python -m mixup_repro.experiment pilot --download --data /content/cifar10 --output /content/drive/MyDrive/mixup-reproduction-v1 --resume
-
-# 3. After reviewing pilot feasibility, run each seed/method.
-python -m mixup_repro.experiment train --method erm --seed 1 --data /content/cifar10 --output /content/drive/MyDrive/mixup-reproduction-v1/main --resume
-python -m mixup_repro.experiment train --method mixup --seed 1 --data /content/cifar10 --output /content/drive/MyDrive/mixup-reproduction-v1/main --resume
-# Repeat for seeds 2 and 3. Add --download after a new Colab session if the dataset is gone.
-
-# 4. Freeze only when all six runs are complete and decisions are final.
+python -m mixup_repro.experiment train --method erm --seed 1 --data /content/cifar10 --download --resume --output /content/drive/MyDrive/mixup-reproduction-v1/main
+# ...mixup seed 1, then both methods for seeds 2 and 3
 python -m mixup_repro.experiment freeze --output /content/drive/MyDrive/mixup-reproduction-v1/main
-
-# 5. Evaluate selected checkpoints, then summarize measured results.
 python -m mixup_repro.experiment evaluate --download --data /content/cifar10 --output /content/drive/MyDrive/mixup-reproduction-v1/main
 python -m mixup_repro.summarize --output /content/drive/MyDrive/mixup-reproduction-v1/main
 ```
 
-The default device is CUDA and commands fail clearly if no GPU is available. `--device cpu` is
-for debugging only. One run per output folder at a time. `--resume` restores an existing run or
-starts it if absent. It does not extend the configured budget. After freezing, training is blocked.
-`checkpoint.pt` is written every 5 epochs and at the final epoch (`--save-every N` changes this);
-after a disconnect, `--resume` reruns the epochs since the last checkpoint with the same seeds.
+Checkpoints (`checkpoint.pt`, about 135 MB) are written every 5 epochs and at the final epoch, and
+`--resume` reruns any unsaved epochs identically. One run per output folder at a time. After the
+freeze, training is locked, and the evaluator refuses to overwrite existing test metrics.
 
-The standard CIFAR download archive includes test files. Development commands only instantiate
-the training split; downloaded test images are not loaded or evaluated until the explicit evaluator.
+## Licence
 
-## Outputs
-
-- `split.json`: fixed train/validation indices, label hash and split seed.
-- `<method>_seed<seed>/checkpoint.pt`: latest full state plus validation-selected best weights.
-- `<method>_seed<seed>/<method>_seed<seed>_history.csv`: training objective, validation metrics, compute time and peak GPU memory.
-- `frozen.json`: completion checks and hashes of all six selected-run containers.
-- `test_results.json`, `paired_results.csv`, `summary.md`, `learning_curves.png`: final measured evidence.
-
-Training objectives differ between methods; compare validation/test errors for the performance claim.
-Do not report the pilot or software-test accuracies as reproduction results.
-
-## Version control and submission
-
-Commit code/config/log updates as you work. Large datasets, checkpoints and local PDFs are ignored.
-After final evaluation, deliberately add a compact copy of metrics/figures to a `results/` directory
-for submission, keeping provenance. No public GitHub upload is performed by this setup.
+`vendor/` keeps the upstream licences (CC BY-NC 4.0 and the pytorch-cifar licence). No new licence
+is asserted over the upstream code.

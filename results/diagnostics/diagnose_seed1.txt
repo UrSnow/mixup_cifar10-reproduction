@@ -1,0 +1,6 @@
+Seed 1, validation-selected weights. Errors in %. No test data was loaded.
+| Method | Best epoch | Val (logged) | Val | Clean train | Val, BN re-est. | Clean train, BN re-est. |
+|---|---:|---:|---:|---:|---:|---:|
+| erm | 41 | 7.20 | 7.20 | 0.46 | 7.14 | 0.44 |
+| mixup | 49 | 17.98 | 17.98 | 15.72 | 16.94 | 14.58 |
+"Val" should equal "Val (logged)"; a difference means the evaluation is not reproducible.

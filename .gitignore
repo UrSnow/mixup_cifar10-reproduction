@@ -31,6 +31,18 @@ sample_data/
 *.pptx
 *.docx
 ~$*
+# ...except the write-up's generated figure, which the paper needs to compile
+!paper/generated/*.pdf
+
+# LaTeX build files (rebuild with scripts/reproduce.py)
+paper/*.aux
+paper/*.bbl
+paper/*.blg
+paper/*.log
+paper/*.out
+paper/*.fls
+paper/*.fdb_latexmk
+paper/*.synctex.gz
 
 # Editors and OS
 .vscode/

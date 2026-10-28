@@ -297,6 +297,22 @@ No test data was loaded.
 - Next action: copy the frozen manifest, test results, summary, learning curves and the six
   history files from Drive into `results/main/`, and write up.
 
+## 2026-10-29: results in the repository, reproduce command and write-up
+
+No new training or test evaluation. Nothing in `mixup_repro/` or `vendor/` changed, so the source
+hash still matches `frozen.json`.
+
+- `results/main/` holds the files copied from Drive; checked against each other (manifest hash,
+  checkpoint hashes, selected epochs, paired results, source hash). `results/diagnostics/` holds the
+  seed 1 diagnostic output, copied verbatim from the notebook. `results/checks/small_alpha/` holds
+  the history of the alpha 0.001 check.
+- `scripts/reproduce.py`: `--from-results results` repeats those checks and regenerates every
+  number, table and figure of the write-up into `paper/generated/`, then builds the PDF; with
+  `--data` and `--output` it reruns the whole experiment first. `environment.yml` pins the Colab
+  versions.
+- Write-up drafted in `paper/main.tex` (IEEE conference format). All measured numbers in it are
+  macros from `paper/generated/numbers.tex`.
+
 ## Entry template
 
 Date / run identifier:
