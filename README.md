@@ -4,8 +4,9 @@ This project tests whether mixup lowers CIFAR-10 test error compared with ordina
 under the submitted reduced-scale protocol. It implements Figure 3(a)'s PreAct ResNet-18 comparison.
 It contains no claimed reproduction results yet.
 
-Start with **`notebooks/01_colab_pilot.ipynb`**. Open it in Colab in the browser (not via VS Code)
-and choose a GPU runtime. Put `mixup-colab-project.zip` in the top level of your Google Drive first.
+Start with **`notebooks/01_colab_pilot.ipynb`**. Run it on a Colab GPU runtime, either from VS Code
+connected to Colab (used for the 2026-10-28 pilot) or in the Colab browser interface.
+Put `mixup-colab-project.zip` in the top level of your Google Drive first.
 The notebook first runs protocol checks and a small pilot. Full experiments and testing require
 explicit switches, so running all cells does not silently launch six training runs or inspect test data.
 

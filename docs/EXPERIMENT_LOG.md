@@ -37,8 +37,9 @@
   committing to the six-run budget. No test data was loaded.
 - Code: the ZIP built on 2026-10-24, identical to commit 658837e. Config `configs/proposal.json`,
   pilot override 2 epochs, no LR milestones, seed 1, 1,024 train / 256 validation images.
-- Runtime: Colab browser interface, Tesla T4, Python 3.13.16, torch 2.11.0+cu130,
-  torchvision 0.26.0+cu130.
+- Runtime: VS Code connected to a Colab runtime, Tesla T4, Python 3.13.16, torch 2.11.0+cu130,
+  torchvision 0.26.0+cu130. Unlike the 2026-10-18 attempt, Drive mounting worked from VS Code.
+  (Corrected: an earlier version of this entry said the Colab browser interface was used.)
 - The test cell finished without an exception (`check=True`), so all 8 tests passed on the Colab
   runtime. CIFAR-10 downloaded, Drive mounted, and deterministic mode raised no CUDA error.
 - Results (copies in `results/pilot/`; ERM identity confirmed by the notebook's printed history):
