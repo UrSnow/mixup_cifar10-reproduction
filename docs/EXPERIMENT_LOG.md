@@ -122,6 +122,59 @@
 - Still open: whether replaced checkpoints accumulate in Drive's trash.
 - Next action: start `erm` seed 1 and check the first full epochs (time, validation error).
 
+## 2026-10-28: seed 1 pair, and why mixup underfits
+
+No test data was loaded for anything in this entry.
+
+- `erm` seed 1: 50 epochs in one session, about 60 s per epoch (52 s for epoch 1), so ~50 min.
+  A "Colab compute units depleted" message appeared around epoch 39, but the session kept running
+  to epoch 50. Selected checkpoint: epoch 41, validation error 7.20% (final epoch 7.42%).
+- `mixup` seed 1: 50 epochs, ~59 s per epoch. The notebook showed no output while it ran, so I
+  interrupted the kernel after the epoch 5 checkpoint. `--resume` restarted at epoch 6 as designed.
+  This was the first resume of a real run. The epochs computed before the interrupt were not
+  recorded, so they cannot be compared with the rerun. Selected checkpoint: epoch 49, validation
+  error 17.98% (final epoch 18.84%).
+- Mixup is far behind ERM throughout. Validation error: epoch 6, 61.54% vs 33.18%; epoch 25,
+  31.60% vs 14.94%; selected checkpoints, 17.98% vs 7.20%. The paper reports mixup 1.4 points
+  better than ERM (4.2% vs 5.6%) after 200 epochs.
+- Diagnostic (`scripts/diagnose_mixup.py`, seed 1, validation-selected weights, errors in %):
+
+  | Method | Best epoch | Val (logged) | Val | Clean train | Val, BN re-est. | Clean train, BN re-est. |
+  |---|---:|---:|---:|---:|---:|---:|
+  | erm | 41 | 7.20 | 7.20 | 0.46 | 7.14 | 0.44 |
+  | mixup | 49 | 17.98 | 17.98 | 15.72 | 16.94 | 14.58 |
+
+  - Re-measured validation error equals the logged value, so evaluation is reproducible.
+  - Mixup misclassifies 15.7% of clean training images against 0.46% for ERM: it is underfitting,
+    not failing to generalise.
+  - Re-estimating BatchNorm statistics on unmixed training batches improves mixup by about
+    1 point and ERM by 0.06, so the mismatch between statistics collected on mixed inputs and clean
+    evaluation images is real but small. It is not the main cause.
+- Code-path check (`configs/check_small_alpha.json`: alpha 0.001, 5 epochs at lr 0.1, seed 1,
+  output `checks/small_alpha`). With alpha this small, lambda is almost always essentially 0 or 1,
+  so a "mixed" batch is the original batch or a reordering of it, and training is equivalent to ERM
+  while still running the mixup sampling, permutation, label pairing and mixed loss. About 0.5% of
+  batches have lambda between 0.01 and 0.99.
+
+  | Validation error (%) | Epoch 1 | 2 | 3 | 4 | 5 |
+  |---|---:|---:|---:|---:|---:|
+  | ERM seed 1 | 64.82 | 54.60 | 50.14 | 43.52 | 35.94 |
+  | Check, alpha 0.001 | 64.02 | 53.42 | 43.80 | 41.58 | 31.16 |
+
+  The check tracks ERM (slightly better at every epoch), within the epoch-to-epoch variation of
+  training at lr 0.1. It is not bit-identical, as expected: reordering a batch changes floating-point
+  summation order, and small differences grow at this learning rate. It is far from alpha 1 mixup
+  (61.54% at epoch 6). Conclusion: no evidence of a bug in the mixup path; the underfitting comes
+  from alpha 1 at this budget.
+- Interpretation: with 25 epochs at lr 0.1 instead of the paper's 100, mixup with alpha 1 has not
+  fitted the training data when the learning rate drops. This matches the paper's own remarks that
+  longer runs benefit most from mixup and that large alpha leads to underfitting (Section 3.1).
+- Decision, made before any test access: continue seeds 2 and 3 under the pre-registered protocol,
+  unchanged. Alpha and the schedule are not changed in response to validation results. A longer
+  schedule or smaller alpha may be run later as a separately labelled exploratory experiment, if
+  compute allows.
+- Next action: `erm` seed 2, then `mixup` seed 2.
+
 ## Entry template
 
 Date / run identifier:

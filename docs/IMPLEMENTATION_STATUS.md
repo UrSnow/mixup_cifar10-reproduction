@@ -51,9 +51,11 @@ The pilot rerun on Colab passed all 9 tests and reproduced the first pilot's met
 ## Not yet verified
 
 - Whether replaced checkpoints accumulate in Drive's trash and consume quota.
-- Full-epoch time on the complete 45,000-image training split.
-- That validation error falls well below chance in the first full epochs for both methods.
-- Six completed runs or any scientific reproduction result.
+- Six completed runs (2 of 6 done: seed 1 pair) or any scientific reproduction result.
+
+Measured on 2026-10-28: a full epoch takes about 60 s on a T4, so a 50-epoch run takes ~50 min.
+Both seed 1 runs learned normally from the first epoch; mixup underfits at this budget (see
+`EXPERIMENT_LOG.md`), and a small-alpha check found no bug in the mixup code path.
 
 Next milestone: rerun the pilot with the rebuilt ZIP, then start the first main run and check
 its first epochs before continuing. The pilot uses only development data.
