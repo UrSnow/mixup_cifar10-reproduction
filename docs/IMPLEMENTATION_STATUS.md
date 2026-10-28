@@ -51,11 +51,13 @@ The pilot rerun on Colab passed all 9 tests and reproduced the first pilot's met
 ## Not yet verified
 
 - Whether replaced checkpoints accumulate in Drive's trash and consume quota.
-- Six completed runs (3 of 6 done: seed 1 pair, `erm` seed 2) or any scientific reproduction result.
+- Six completed runs (4 of 6 done: seed 1 and seed 2 pairs) or any scientific reproduction result.
 
 Measured on 2026-10-28: a full epoch takes about 60 s on a T4, so a 50-epoch run takes ~50 min.
 Both seed 1 runs learned normally from the first epoch; mixup underfits at this budget (see
 `EXPERIMENT_LOG.md`), and a small-alpha check found no bug in the mixup code path.
+A real resume on the GPU was verified on 2026-10-28: after a lost connection, `mixup` seed 2 resumed
+on a new runtime and reproduced its epoch 21 validation error exactly (25.92%).
 
 Next milestone: rerun the pilot with the rebuilt ZIP, then start the first main run and check
 its first epochs before continuing. The pilot uses only development data.

@@ -187,6 +187,33 @@ No test data was loaded.
   (7.94% vs 7.20%), which is ordinary seed-to-seed variation for single runs.
 - Next action: `mixup` seed 2.
 
+## 2026-10-28: `mixup` seed 2, a lost connection, and a resume check on the GPU
+
+No test data was loaded.
+
+- Seed 1's slow start was checked first. Its history file on Drive has epochs 1-5 at 80.30, 76.28,
+  72.76, 72.08 and 67.96%, then 61.54% at epoch 6, the first epoch after its resume. The curve is
+  continuous across the resume, so seed 1 was slow from the start, not damaged by the resume. Its
+  epoch 1 training objective was 2.65, above ln 10 = 2.30 (uniform guessing), so its first epoch went
+  badly, like the early spike in the pilot. Seed 2 started at 71.92%.
+- The run stopped after epoch 21. The VS Code Colab extension logged failed requests to Colab
+  (FetchError) and later a timeout; the history file on Drive stopped at epoch 21, so the runtime was
+  gone, not just the display. Last checkpoint: epoch 20.
+- Resumed on a new runtime with the same notebook cells and `--resume`. CIFAR-10 had to be downloaded
+  again because `/content/cifar10` is local to the runtime; the server sent about 69 kB/s, so the
+  download took roughly 40 minutes. This changed nothing in the data (torchvision checks the MD5).
+- Resume check: the rerun of epoch 21 gave 25.92%, exactly the value from before the disconnect.
+  On the real GPU, on a different runtime, a resumed mixup run reproduces the interrupted one.
+- Selected checkpoint: epoch 47, validation error 8.82%. Final epoch 9.12%. Epoch 6 43.74%,
+  epoch 25 16.50%.
+- Seed 2 pair: ERM 7.94%, mixup 8.82%, a gap of 0.88 points against 10.78 for seed 1. Mixup's two
+  seeds differ by 9.16 points while ERM's differ by 0.74. At this budget, mixup with alpha 1 is very
+  sensitive to the seed, and seed 1 fell behind from the first epoch. With three seeds this variation
+  will dominate the standard deviation; it is part of the result, not a reason to change the
+  protocol. Validation errors are for checkpoint selection only; the comparison uses test errors
+  after the freeze.
+- Next action: `erm` seed 3, then `mixup` seed 3.
+
 ## Entry template
 
 Date / run identifier:
