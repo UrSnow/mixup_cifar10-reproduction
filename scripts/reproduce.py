@@ -264,7 +264,7 @@ def figures(histories, test, out):
     dots.grid(axis='y', color='#e6e6e6', lw=.6)
     dots.set_title('(b) Test error per seed vs. paper', fontsize=8, loc='left')
     fig.tight_layout()
-    fig.savefig(out/'results.pdf')
+    fig.savefig(out/'results.pdf', metadata={'CreationDate': None})  # no timestamp: same input, same bytes
     fig.savefig(out/'results.png', dpi=200)
     plt.close(fig)
 

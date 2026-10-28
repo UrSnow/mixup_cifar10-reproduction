@@ -1,0 +1,7 @@
+# These files are hashed byte for byte: the source hash in results/main/frozen.json covers
+# mixup_repro/*.py and vendor/resnet.py, and test_results.json holds the SHA-256 of frozen.json.
+# Check them out exactly as committed, so line-ending conversion (core.autocrlf on Windows) cannot
+# change them and make scripts/reproduce.py reject the results.
+mixup_repro/*.py -text
+vendor/resnet.py -text
+results/** -text

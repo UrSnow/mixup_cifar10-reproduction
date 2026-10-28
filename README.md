@@ -57,7 +57,8 @@ python scripts/reproduce.py --data /content/cifar10 --output /content/drive/MyDr
 This runs the tests, the six main runs, the small-alpha check, the freeze, the single test
 evaluation, the summary and the seed 1 diagnostic, and then rebuilds the paper from the new
 outputs. If Colab disconnects, run the same command again and it resumes. Afterwards,
-`git diff paper/generated` shows any difference from the committed results. Training is
+`git diff paper/generated` shows any difference from the committed results in the `.tex` files
+(the figure files can also differ byte for byte with another matplotlib version). Training is
 deterministic, but bit-identical results are only expected on the same GPU and software
 (Tesla T4, torch 2.11.0+cu130).
 
