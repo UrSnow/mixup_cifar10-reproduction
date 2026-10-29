@@ -1,3 +1,4 @@
+# Written for this project; the authors' code is only in vendor/ (see vendor/PROVENANCE.md).
 """Diagnose the mixup-versus-ERM validation gap without loading any test data.
 
 For each method's validation-selected weights (one seed), report:

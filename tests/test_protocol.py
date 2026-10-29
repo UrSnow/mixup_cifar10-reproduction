@@ -1,3 +1,4 @@
+# Written for this project; the authors' code is only in vendor/ (see vendor/PROVENANCE.md).
 import copy
 import json
 from pathlib import Path
@@ -42,6 +43,7 @@ class ProtocolTests(unittest.TestCase):
         np.testing.assert_array_equal(np.bincount(labels[split['validation']]),[500]*10)
 
     def test_mixup_loss_and_gradient_match_soft_targets(self):
+        # mixed_loss reimplements the authors' mixup_criterion (vendor/train.py, lines 137-138).
         x=torch.randn(4,3,requires_grad=True)
         y=torch.tensor([0,1,2,0]); other=y.flip(0); lam=.7
         soft=lam*nn.functional.one_hot(y,3)+(1-lam)*nn.functional.one_hot(other,3)
@@ -58,6 +60,7 @@ class ProtocolTests(unittest.TestCase):
         self.assertTrue(improves(4.9,5.))
 
     def test_official_architecture_and_initialization(self):
+        # ResNet18 is the authors' unmodified model (vendor/resnet.py): check it is the pre-activation one.
         seed_everything(1); first=ResNet18()
         self.assertIsInstance(first.layer1[0],PreActBlock)
         self.assertEqual(sum(isinstance(m,PreActBlock) for m in first.modules()),8)

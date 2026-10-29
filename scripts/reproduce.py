@@ -1,3 +1,4 @@
+# Written for this project; the authors' code is only in vendor/ (see vendor/PROVENANCE.md).
 """Reproduce every number, table and figure in the write-up with one command.
 
 From the committed results (CPU, a few seconds, PyTorch not needed):

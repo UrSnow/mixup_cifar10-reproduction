@@ -1,3 +1,4 @@
+# Written for this project; the authors' code is only in vendor/ (see vendor/PROVENANCE.md).
 """Rebuild the small upload bundle after reviewed code/config/documentation changes."""
 from pathlib import Path
 from zipfile import ZipFile, ZIP_DEFLATED
